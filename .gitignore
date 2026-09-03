@@ -1,0 +1,4 @@
+*.vcd
+*.vvp
+sim_*
+*.out
