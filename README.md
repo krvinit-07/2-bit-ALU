@@ -15,7 +15,8 @@ Lookahead Adder (CLA).
 ```
 alu-project/
 ├── rtl/
-│   └── alu_2bit.v      # RCA-based ALU (behavioural)
+│   ├── alu_2bit.v      # RCA-based ALU (behavioural)
+│   └── alu_cla.v       # CLA-based ALU (adder path uses carry lookahead)
 ├── tb/
 │   ├── tb_alu.v        # Testbench for the RCA-based ALU
 │   └── tb_alu_cla.v    # Testbench for the CLA-based ALU
@@ -26,13 +27,17 @@ alu-project/
 
 ## Note on the CLA module
 
-The uploaded report includes the **testbenches** for the CLA-based ALU
-(`alu_cla`, with an added `remainder` output) but the extracted text did not
-contain the full `alu_cla` RTL source (Section 5.1 refers to it but the code
-block wasn't recovered from the PDF). `tb/tb_alu_cla.v` is included as-is and
-expects a module named `alu_cla` with ports `A, B, opcode, result, remainder,
-valid, error` — add that module under `rtl/` (e.g. `rtl/alu_cla.v`) before
-simulating it. Happy to draft that module for you if you'd like.
+The project report documents a CLA-based ALU (Chapter 5) — its gate-level
+schematic and final GDS chip layout are both in the report — but the actual
+`alu_cla` RTL source text was missing from the extracted report/repo (only
+the testbenches survived). `rtl/alu_cla.v` here is a reconstruction that
+matches the interface `tb/tb_alu_cla.v` expects (`A, B, opcode -> result,
+remainder, valid, error`) and mirrors the Generate/Propagate carry lookahead
+logic described in the report: only the addition path uses the CLA adder
+(subtraction reuses it via 2's complement); AND/OR/XOR/multiply/divide are
+unchanged from `alu_2bit.v`, with a `remainder` output added for division.
+It has been verified in simulation against the values in the report
+(e.g. 3+3=6, 3×3=9, divide-by-zero sets `error`).
 
 ## Simulating (Icarus Verilog + GTKWave)
 
@@ -42,7 +47,7 @@ iverilog -o sim_rca rtl/alu_2bit.v tb/tb_alu.v
 vvp sim_rca
 gtkwave dump.vcd
 
-# CLA-based ALU (once rtl/alu_cla.v is added)
+# CLA-based ALU
 iverilog -o sim_cla rtl/alu_cla.v tb/tb_alu_cla.v
 vvp sim_cla
 gtkwave cla_dump.vcd
